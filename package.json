@@ -29,7 +29,7 @@
   "scripts": {
     "cleanup": "rm -rf .cache dist node_modules",
     "start": "parcel index.html --https",
-    "build": "parcel build --no-minify --public-url '/VegaPlus-Editor.github.io/' index.html",
+    "build": "parcel build --no-minify --public-url '/VegaPlus-Comparison.github.io/' index.html",
     "deploy": "npm run build && gh-pages -d dist"
   },
   "devDependencies": {
