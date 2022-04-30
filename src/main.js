@@ -102,7 +102,6 @@ export var flights_vegaplus_spec = {
           "maxbins": {
             "signal": "maxbins"
           },
-          "nice": false
         },
         {
           "type": "aggregate",
@@ -277,7 +276,6 @@ export  var flights_vega_spec = {
           "maxbins": {
             "signal": "maxbins"
           },
-          "nice": false
         },
         {
           "type": "aggregate",
