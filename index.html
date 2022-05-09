@@ -88,14 +88,14 @@
 <div class="split right" style="padding-top: 2px; padding-left: 2px;">
     <div class="w3-panel w3-light-grey" style="height: 60%; margin-top:0px; margin-bottom: 0px;">
       <div class="w3-bar w3-light-grey" style="width: 100%;  font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;">
-        <button id="bug" class="w3-bar-item w3-button tablink2 w3-white" onclick="openVisualization(event,'VegaVisualization')">VEGA</button>
-        <button id="bug1" class="w3-bar-item w3-button tablink2" onclick="openVisualization(event,'VegaDuckVisualization')">VEGAPLUS-DUCKDB</button>
-        <button class="w3-bar-item w3-button tablink2" onclick="openVisualization(event,'VegaSQLVisualization')">VEGAPLUS-SQLITE</button>
+        <button id="bug1" class="w3-bar-item w3-button tablink2  w3-white" onclick="openVisualization(event,'VegaDuckVisualization')">VEGAPLUS-DUCKDB</button>
+        <button id="bug" class="w3-bar-item w3-button tablink2" onclick="openVisualization(event,'VegaVisualization')">VEGA</button>
+        <!-- <button class="w3-bar-item w3-button tablink2" onclick="openVisualization(event,'VegaSQLVisualization')">VEGAPLUS-SQLITE</button> -->
       </div>
     
-      <div class="w3-panel w3-light-grey city2" id="VegaVisualization"></div><div id="FullScreen" class="fullscreen-open"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg></div>
       <div class="w3-panel w3-light-grey city2" id="VegaDuckVisualization"></div><div id="FullScreen" class="fullscreen-open"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg></div>
-      <div class="w3-panel w3-light-grey city2" id="VegaSQLVisualization"></div><div id="FullScreen" class="fullscreen-open"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg></div>
+      <div class="w3-panel w3-light-grey city2" id="VegaVisualization"></div><div id="FullScreen" class="fullscreen-open"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg></div>
+      <!-- <div class="w3-panel w3-light-grey city2" id="VegaSQLVisualization"></div><div id="FullScreen" class="fullscreen-open"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg></div> -->
       
     </div>
     <div class="w3-panel w3-card" style="height: 40%; margin-top:0px; margin-bottom: 0px; padding: 0px; padding-top: 2px; background-color: white;">
@@ -109,11 +109,11 @@
       </div>
     
       <div id="DataViewer" class="w3-container w3-white city1">
-        <div class="paragraph"><p>Vega</p><p>VegaPlus-DuckDB</p><p>VegaPlus-SQLite</p></div>
+        <div class="paragraph"><p>VegaPlus-DuckDB</p><p>Vega</p></div>
         <div class="paragraph">
-        <p id='showVegaData' style="overflow:auto; height: 20em;">Vega</p>
         <p id='showVegaDuckData' style="overflow:auto; height: 20em;">VegaPlus-DuckDB</p>
-        <p id='showVegaSQLData' style="overflow:auto; height: 20em;">VegaPlus-SQLite</p>
+        <p id='showVegaData' style="overflow:auto; height: 20em;">Vega</p>
+        <!-- <p id='showVegaSQLData' style="overflow:auto; height: 20em;">VegaPlus-SQLite</p> -->
       </div>
       </div>
       
@@ -127,12 +127,12 @@
       </div>
 
       <div id="Signal" class="w3-container w3-white city1 paragraph" style="display:none">
-        <p>Vega</p>
-        <p id='signalVegaData' style="overflow:auto; height: 20em"></p>
         <p>VegaPlus-DuckDB</p>
         <p id='signalDuckData' style="overflow:auto; height: 20em"></p>
-        <p>VegaPlus-SQLite</p>
-        <p id='signalSQLData' style="overflow:auto; height: 20em"></p>
+        <p>Vega</p>
+        <p id='signalVegaData' style="overflow:auto; height: 20em"></p>
+        <!-- <p>VegaPlus-SQLite</p>
+        <p id='signalSQLData' style="overflow:auto; height: 20em"></p> -->
       </div>
       
       <div id="Performance" class="w3-container w3-white city1" style="display:none; height: 100%;">

@@ -27,15 +27,15 @@ vseditor.setTheme('ace/theme/github');
 
 var url_loc = window.location.origin.toString();
 var db = DuckDBs()
-var SQL_db = sqliteDB()
+// var SQL_db = sqliteDB()
 
-async function sqliteDB(){
-  var data_url = require("../data/sql.db")
-  data_url = url_loc + data_url
-  const db = new SqliteDB<"Test">(data_url)
-  await db.initialize();
-  return db
-}
+// async function sqliteDB(){
+//   var data_url = require("../data/sql.db")
+//   data_url = url_loc + data_url
+//   const db = new SqliteDB<"Test">(data_url)
+//   await db.initialize();
+//   return db
+// }
 
 async function DuckDBs(){
   var url = require("../data/flights-3m.parquet");
@@ -62,11 +62,11 @@ db.then(function(db){
       const results = await db.queries(query);
       return results;
     }
-    SQL_db.then(function(SQL_db){
-        async function sql_query(query){
-          const results = await SQL_db.queries(query);
-          return results;
-        }
+    // SQL_db.then(function(SQL_db){
+    //     async function sql_query(query){
+    //       const results = await SQL_db.queries(query);
+    //       return results;
+    //     }
 
         (VegaTransformDB as any).type('Serverless');
 
@@ -142,34 +142,34 @@ db.then(function(db){
             }
 
 
-            {
-                let vp_spec_copy = (JSON.parse(JSON.stringify(vp_spec)));
-                (VegaTransformDB as any).QueryFunction(sql_query);
-                const newspec_vp = specRewrite(vp_spec_copy)
-                rename(newspec_vp.data, "dbtransform");
-                (vega as any).transforms["dbtransform"] = VegaTransformDB;
-                const runtime_vp = vega.parse(newspec_vp);
-                const view_vp_1 = new vega.View(runtime_vp)
-                .logLevel(vega.Info)
-                .renderer("svg")
-                .initialize(document.querySelector("#VegaSQLVisualization"));
-                view_vp_1.addDataListener(table_name, function(name, value) {
-                    tableFromJson(value, 'showVegaSQLData');
-                    });
+            // {
+            //     let vp_spec_copy = (JSON.parse(JSON.stringify(vp_spec)));
+            //     (VegaTransformDB as any).QueryFunction(sql_query);
+            //     const newspec_vp = specRewrite(vp_spec_copy)
+            //     rename(newspec_vp.data, "dbtransform");
+            //     (vega as any).transforms["dbtransform"] = VegaTransformDB;
+            //     const runtime_vp = vega.parse(newspec_vp);
+            //     const view_vp_1 = new vega.View(runtime_vp)
+            //     .logLevel(vega.Info)
+            //     .renderer("svg")
+            //     .initialize(document.querySelector("#VegaSQLVisualization"));
+            //     view_vp_1.addDataListener(table_name, function(name, value) {
+            //         tableFromJson(value, 'showVegaSQLData');
+            //         });
                     
-                await view_vp_1.runAsync();
-                tableFromJson(view_vp_1["_runtime"]["data"][table_name]["values"]["value"], 'showVegaSQLData')
+            //     await view_vp_1.runAsync();
+            //     tableFromJson(view_vp_1["_runtime"]["data"][table_name]["values"]["value"], 'showVegaSQLData')
 
-                var tmp = view_vp_1["_runtime"]["signals"]
-                for (var val of Object.keys(tmp)) {
-                    view_vp_1.addSignalListener(val, function(name, value) {
-                        tmp[name]['value'] = value
-                        signal_viewer(tmp, "signalSQLData")
-                        });    
-                }
-                signal_viewer(tmp, "signalSQLData")
+            //     var tmp = view_vp_1["_runtime"]["signals"]
+            //     for (var val of Object.keys(tmp)) {
+            //         view_vp_1.addSignalListener(val, function(name, value) {
+            //             tmp[name]['value'] = value
+            //             signal_viewer(tmp, "signalSQLData")
+            //             });    
+            //     }
+            //     signal_viewer(tmp, "signalSQLData")
 
-            }
+            // }
             
         }
 
@@ -204,10 +204,10 @@ db.then(function(db){
         }
 
         Run_Visualization(null, car_duckdb_spec)
-        document.getElementById("bug1").click()
         document.getElementById("bug").click()
+        document.getElementById("bug1").click()
         document.getElementById('Cars').addEventListener('click', event => {examples(event, cars_spec, "cars")});
         document.getElementById('Flights').addEventListener('click', event => {examples(event, flights_vega_spec, "table")});
-    });
+    // });
 
 });
