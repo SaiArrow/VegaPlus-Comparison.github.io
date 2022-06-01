@@ -7,12 +7,15 @@ import { view2dot } from '../dependencies/view2dot'
 var hpccWasm = window["@hpcc-js/wasm"];
 import { DuckDB, SqliteDB } from "../src"
 import {tableFromJson, flights_vegaplus_spec, flights_vega_spec, car_duckdb_spec, cars_spec} from "./main"
+import {Chart, registerables} from "chart.js"
 
-
+Chart.register(...registerables);
 
 var ace = require('brace');
 require('brace/mode/json');
 require('brace/theme/github');
+
+var duckdb_startup = 0;
 
 var editor = ace.edit('editor');
 editor.getSession().setMode('ace/mode/json');
@@ -38,12 +41,16 @@ var db = DuckDBs()
 // }
 
 async function DuckDBs(){
+  var start = Date.now()
   var url = require("../data/flights-3m.parquet");
   url = url_loc + url
   const db = new DuckDB<"Test">(url, "flights");
   await db.initialize();
   var cars_url = require("../data/cars.parquet");
   await db.create_table(url_loc+cars_url, "cars")
+  var end = Date.now()
+  console.log("Database Startup Time", end-start)
+  duckdb_startup = end-start;
   return db
 }
 
@@ -56,6 +63,38 @@ function rename(dataSpec, type) {
       }
     }
 }
+
+const ctx = document.getElementById('myChart') as HTMLCanvasElement;
+const myChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: ['Vega', 'VegaPlus', 'VegaPlus + DB Start'],
+        datasets: [{
+            label: 'Runtime Latency (ms)',
+            data: [4037, 542, 542+duckdb_startup],
+            backgroundColor: [
+                'rgba(255, 99, 132, 0.2)',
+                'rgba(54, 162, 235, 0.2)',
+                'rgba(255, 206, 86, 0.2)',
+            ],
+            borderColor: [
+                'rgba(255, 99, 132, 1)',
+                'rgba(54, 162, 235, 1)',
+                'rgba(255, 206, 86, 1)',
+            ],
+            borderWidth: 1
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
 
 db.then(function(db){
     async function duck_db_query(query){
@@ -71,39 +110,10 @@ db.then(function(db){
         (VegaTransformDB as any).type('Serverless');
 
         async function Run_Visualization(_, vp_spec){
-            console.log(vp_spec)
+
             var vega_spec = JSON.parse(editor.getValue().toString().trim())
             console.log(vseditor.getValue())
             var table_name = JSON.parse(vseditor.getValue().toString().trim())["source"]
-
-            const newvegaspec = specRewrite(vega_spec);
-            const vega_runtime = vega.parse(newvegaspec);
-            const view = new vega.View(vega_runtime)
-            .logLevel(vega.Info)
-            .renderer("svg")
-            .initialize(document.querySelector("#VegaVisualization"));
-    
-            await view.runAsync();
-            view.addDataListener(table_name, function(name, value) {
-                tableFromJson(value, 'showVegaData');
-            });
-            tableFromJson(view["_runtime"]["data"][table_name]["values"]["value"], 'showVegaData')
-
-            var tmp = view["_runtime"]["signals"]
-            for (var val of Object.keys(tmp)) {
-                view.addSignalListener(val, function(name, value) {
-                    tmp[name]['value'] = value
-                    signal_viewer(tmp, "signalVegaData")
-                    });    
-            }
-            signal_viewer(tmp, "signalVegaData")
-            view.runAfter(view => {
-                const dot = `${view2dot(view)}`
-                hpccWasm.graphviz.layout(dot, "svg", "dot").then(svg => {
-                const placeholder = document.getElementById("vega-graph-placeholder");
-                placeholder.innerHTML = svg;
-                });
-            })
 
             {
                 let vp_spec_copy = (JSON.parse(JSON.stringify(vp_spec)));
@@ -112,15 +122,21 @@ db.then(function(db){
                 rename(newspec_vp.data, "dbtransform");
                 (vega as any).transforms["dbtransform"] = VegaTransformDB;
                 const runtime_vp = vega.parse(newspec_vp);
+                var start = Date.now()
                 const view_vp = new vega.View(runtime_vp)
                 .logLevel(vega.Info)
                 .renderer("svg")
-                .initialize(document.querySelector("#VegaDuckVisualization"));
+                .initialize(document.querySelector("#VegaDuckVisualization"));                    
+                await view_vp.runAsync();
+                var end = Date.now()
+                var vega_plus_time = end-start;
+                console.log("VPT", vega_plus_time)
+                myChart.data.datasets[0].data[1] = vega_plus_time
+                myChart.data.datasets[0].data[2] = vega_plus_time+duckdb_startup
                 view_vp.addDataListener(table_name, function(name, value) {
                     tableFromJson(value, 'showVegaDuckData');
                     });
-                    
-                await view_vp.runAsync();
+
                 tableFromJson(view_vp["_runtime"]["data"][table_name]["values"]["value"], 'showVegaDuckData')
 
                 var tmp = view_vp["_runtime"]["signals"]
@@ -140,6 +156,43 @@ db.then(function(db){
                     });
                 })
             }
+
+            {
+                const newvegaspec = specRewrite(vega_spec);
+                const vega_runtime = vega.parse(newvegaspec);
+                var start = Date.now()
+                const view = new vega.View(vega_runtime)
+                .logLevel(vega.Info)
+                .renderer("svg")
+                .initialize(document.querySelector("#VegaVisualization"));
+                await view.runAsync();
+                var end = Date.now()
+                var vega_time = end-start;
+                console.log("VT", vega_time)
+                myChart.data.datasets[0].data[0] = vega_time
+                view.addDataListener(table_name, function(name, value) {
+                    tableFromJson(value, 'showVegaData');
+                });
+                tableFromJson(view["_runtime"]["data"][table_name]["values"]["value"], 'showVegaData')
+
+                var tmp1 = view["_runtime"]["signals"]
+                for (var val of Object.keys(tmp1)) {
+                    view.addSignalListener(val, function(name, value) {
+                        tmp1[name]['value'] = value
+                        signal_viewer(tmp1, "signalVegaData")
+                        });    
+                }
+                signal_viewer(tmp1, "signalVegaData")
+                view.runAfter(view => {
+                    const dot = `${view2dot(view)}`
+                    hpccWasm.graphviz.layout(dot, "svg", "dot").then(svg => {
+                    const placeholder = document.getElementById("vega-graph-placeholder");
+                    placeholder.innerHTML = svg;
+                    });
+                })
+            }
+
+            myChart.update();
 
 
             // {
@@ -170,6 +223,9 @@ db.then(function(db){
             //     signal_viewer(tmp, "signalSQLData")
 
             // }
+
+            
+            
             
         }
 
