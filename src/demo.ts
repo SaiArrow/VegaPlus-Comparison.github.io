@@ -7,9 +7,15 @@ import { view2dot } from '../dependencies/view2dot'
 var hpccWasm = window["@hpcc-js/wasm"];
 import { DuckDB, SqliteDB } from "../src"
 import {tableFromJson, flights_vegaplus_spec, flights_vega_spec, car_duckdb_spec, cars_spec} from "./main"
-import {Chart, registerables} from "chart.js"
+import {Chart, registerables, LinearScale, CategoryScale} from "chart.js"
+import { BarWithErrorBarsController, BarWithErrorBar } from 'chartjs-chart-error-bars';
+
 
 Chart.register(...registerables);
+Chart.register(BarWithErrorBarsController, BarWithErrorBar, LinearScale, CategoryScale);
+
+
+
 
 var ace = require('brace');
 require('brace/mode/json');
@@ -27,6 +33,16 @@ editor.setValue(JSON.stringify(cars_spec, null, 2));
 var vseditor = ace.edit(document.querySelectorAll('pre[id=editor]')[0]);
 vseditor.getSession().setMode('ace/mode/json');
 vseditor.setTheme('ace/theme/github');
+
+
+var vp_editor = ace.edit(document.querySelectorAll('p[id=editor]')[0]);
+vp_editor.getSession().setMode('ace/mode/json');
+vp_editor.setTheme('ace/theme/github');
+vp_editor.setOption("wrap",true);
+vp_editor.setOption("scrollPastEnd", 1);
+vp_editor.setValue(JSON.stringify(car_duckdb_spec, null, 2));
+
+
 
 var url_loc = window.location.origin.toString();
 var db = DuckDBs()
@@ -65,22 +81,45 @@ function rename(dataSpec, type) {
 }
 
 const ctx = document.getElementById('myChart') as HTMLCanvasElement;
-const myChart = new Chart(ctx, {
-    type: 'bar',
+
+const myChart = new Chart(ctx.getContext('2d'), {
+    type: BarWithErrorBarsController.id,
     data: {
         labels: ['Vega', 'VegaPlus', 'VegaPlus + DB Start'],
         datasets: [{
             label: 'Runtime Latency (ms)',
-            data: [4037, 542, 542+duckdb_startup],
+            data: [
+              {
+                x: 4037,
+                xMin: 4037*0.95,
+                xMax: 4037*1.05,
+              },
+              {
+                x: 542,
+                xMin: 542*0.95,
+                xMax: 542*1.05,
+              },
+              {
+                x: 542+duckdb_startup,
+                xMin: (542+duckdb_startup)*0.95,
+                xMax: (542+duckdb_startup)*1.05,
+              },
+            ],
             backgroundColor: [
                 'rgba(255, 99, 132, 0.2)',
                 'rgba(54, 162, 235, 0.2)',
                 'rgba(255, 206, 86, 0.2)',
+                'rgba(75, 192, 192, 0.2)',
+                'rgba(153, 102, 255, 0.2)',
+                'rgba(255, 159, 64, 0.2)'
             ],
             borderColor: [
                 'rgba(255, 99, 132, 1)',
                 'rgba(54, 162, 235, 1)',
                 'rgba(255, 206, 86, 1)',
+                'rgba(75, 192, 192, 1)',
+                'rgba(153, 102, 255, 1)',
+                'rgba(255, 159, 64, 1)'
             ],
             borderWidth: 1
         }]
@@ -106,11 +145,13 @@ db.then(function(db){
     //       const results = await SQL_db.queries(query);
     //       return results;
     //     }
-
+    
         (VegaTransformDB as any).type('Serverless');
-
+        var vega_start, vega_end, vega_time, vp_start, vp_end, vega_plus_time;
+        var view_vp: vega.View, view: vega.View;
         async function Run_Visualization(_, vp_spec){
 
+            console.log(duckdb_startup, duckdb_startup*0.9, duckdb_startup*1.1)
             var vega_spec = JSON.parse(editor.getValue().toString().trim())
             console.log(vseditor.getValue())
             var table_name = JSON.parse(vseditor.getValue().toString().trim())["source"]
@@ -122,18 +163,33 @@ db.then(function(db){
                 rename(newspec_vp.data, "dbtransform");
                 (vega as any).transforms["dbtransform"] = VegaTransformDB;
                 const runtime_vp = vega.parse(newspec_vp);
-                var start = Date.now()
-                const view_vp = new vega.View(runtime_vp)
+                vp_start = Date.now()
+                view_vp = new vega.View(runtime_vp)
                 .logLevel(vega.Info)
                 .renderer("svg")
                 .initialize(document.querySelector("#VegaDuckVisualization"));                    
                 await view_vp.runAsync();
-                var end = Date.now()
-                var vega_plus_time = end-start;
+                vp_end = Date.now()
+                vega_plus_time = vp_end-vp_start;
                 console.log("VPT", vega_plus_time)
-                myChart.data.datasets[0].data[1] = vega_plus_time
-                myChart.data.datasets[0].data[2] = vega_plus_time+duckdb_startup
+                myChart.data.datasets[0].data[1]['x'] = vega_plus_time
+                myChart.data.datasets[0].data[2]['x'] = vega_plus_time+duckdb_startup
+                myChart.data.datasets[0].data[1]['xMin'] = vega_plus_time*0.95
+                myChart.data.datasets[0].data[2]['xMin'] = (vega_plus_time+duckdb_startup)*0.95
+                myChart.data.datasets[0].data[1]['xMax'] = vega_plus_time*1.05
+                myChart.data.datasets[0].data[2]['xMax'] = (vega_plus_time+duckdb_startup)*1.05
+                console.log(myChart.data.datasets[0].data[1]['x'])
                 view_vp.addDataListener(table_name, function(name, value) {
+                    vp_end = Date.now()
+                    vega_plus_time = vp_end-vp_start;
+                    console.log("VPT-Signal", vega_plus_time)
+                    myChart.data.datasets[0].data[1]['x'] = vega_plus_time
+                    myChart.data.datasets[0].data[2]['x'] = vega_plus_time+duckdb_startup
+                    myChart.data.datasets[0].data[1]['xMin'] = vega_plus_time*0.95
+                    myChart.data.datasets[0].data[2]['xMin'] = (vega_plus_time+duckdb_startup)*0.95
+                    myChart.data.datasets[0].data[1]['xMax'] = vega_plus_time*1.05
+                    myChart.data.datasets[0].data[2]['xMax'] = (vega_plus_time+duckdb_startup)*1.05
+                    myChart.update();
                     tableFromJson(value, 'showVegaDuckData');
                     });
 
@@ -142,6 +198,8 @@ db.then(function(db){
                 var tmp = view_vp["_runtime"]["signals"]
                 for (var val of Object.keys(tmp)) {
                     view_vp.addSignalListener(val, function(name, value) {
+                        view.signal(name, value)
+                        vp_start = Date.now()
                         tmp[name]['value'] = value
                         signal_viewer(tmp, "signalDuckData")
                         });    
@@ -155,22 +213,30 @@ db.then(function(db){
                     placeholder.innerHTML = svg;
                     });
                 })
-            }
-
-            {
+           
                 const newvegaspec = specRewrite(vega_spec);
                 const vega_runtime = vega.parse(newvegaspec);
-                var start = Date.now()
-                const view = new vega.View(vega_runtime)
+                vega_start = Date.now()
+                view = new vega.View(vega_runtime)
                 .logLevel(vega.Info)
                 .renderer("svg")
                 .initialize(document.querySelector("#VegaVisualization"));
                 await view.runAsync();
-                var end = Date.now()
-                var vega_time = end-start;
+                vega_end = Date.now()
+                vega_time = vega_end-vega_start;
                 console.log("VT", vega_time)
-                myChart.data.datasets[0].data[0] = vega_time
+                myChart.data.datasets[0].data[0]['x'] = vega_time
+                myChart.data.datasets[0].data[0]['xMin'] = (vega_time)*0.95
+                myChart.data.datasets[0].data[0]['xMax'] = vega_time*1.05
+
                 view.addDataListener(table_name, function(name, value) {
+                    vega_end = Date.now()
+                    vega_time = vega_end-vega_start;
+                    console.log("VT-Signal", vega_time)
+                    myChart.data.datasets[0].data[0]['x'] = vega_time
+                    myChart.data.datasets[0].data[0]['xMin'] = (vega_time)*0.95
+                    myChart.data.datasets[0].data[0]['xMax'] = vega_time*1.05    
+                    myChart.update();
                     tableFromJson(value, 'showVegaData');
                 });
                 tableFromJson(view["_runtime"]["data"][table_name]["values"]["value"], 'showVegaData')
@@ -178,6 +244,7 @@ db.then(function(db){
                 var tmp1 = view["_runtime"]["signals"]
                 for (var val of Object.keys(tmp1)) {
                     view.addSignalListener(val, function(name, value) {
+                        vega_start = Date.now()
                         tmp1[name]['value'] = value
                         signal_viewer(tmp1, "signalVegaData")
                         });    
@@ -252,9 +319,11 @@ db.then(function(db){
             vseditor.setValue('{"source":"' + name + '"}')
             editor.setValue(JSON.stringify(spec, null, 2));
             if(name=="cars"){
+                vp_editor.setValue(JSON.stringify(car_duckdb_spec, null, 2));
                 Run_Visualization(null, car_duckdb_spec)
             }
             else{            
+                vp_editor.setValue(JSON.stringify(flights_vegaplus_spec, null, 2));
                 Run_Visualization(null, flights_vegaplus_spec)
             }
         }

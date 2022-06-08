@@ -15,6 +15,7 @@
     "brace": "^0.11.1",
     "builddocs": "^1.0.0",
     "chart.js": "^3.8.0",
+    "chartjs-chart-error-bars": "^3.7.2",
     "eslint4b-prebuilt": "^6.7.1",
     "esmoduleserve": "^0.2.0",
     "express": "^4.17.3",

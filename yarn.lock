@@ -1928,6 +1928,11 @@ chart.js@^3.8.0:
   resolved "https://registry.yarnpkg.com/chart.js/-/chart.js-3.8.0.tgz#c6c14c457b9dc3ce7f1514a59e9b262afd6f1a94"
   integrity sha512-cr8xhrXjLIXVLOBZPkBZVF6NDeiVIrPLHcMhnON7UufudL+CNeRrD+wpYanswlm8NpudMdrt3CHoLMQMxJhHRg==
 
+chartjs-chart-error-bars@^3.7.2:
+  version "3.7.2"
+  resolved "https://registry.yarnpkg.com/chartjs-chart-error-bars/-/chartjs-chart-error-bars-3.7.2.tgz#edd609518f43e5a1244d4ff5b86e4d0eb83e8c61"
+  integrity sha512-VI2fu6BcYvnbkKuljhirlKCQjPIzZrdT/p8nzrx+B8X9X8bk/bo4vg9I6L8/25LsDrglxnBRORxWNTHZORrUsw==
+
 chokidar@^2.1.5:
   version "2.1.8"
   resolved "https://registry.yarnpkg.com/chokidar/-/chokidar-2.1.8.tgz#804b3a7b6a99358c3c5c61e71d8728f041cff917"
